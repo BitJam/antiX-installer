@@ -1,0 +1,11 @@
+Package: antix-installer
+Version: 0.6.9
+Architecture: amd64
+Maintainer: anticapitalista <antiX@operamail.com>
+Installed-Size: 1297
+Depends: libqt4-gui, os-prober
+Recommends: gparted, partitionmanager
+Section: system
+Priority: optional
+Homepage: http://antix.mepis.org
+Description: GUI installer for antiX.

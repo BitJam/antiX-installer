@@ -1,3 +1,10 @@
+antix-installer (0.6.9) unstable; urgency=low
+ 
+  * Bugfix to remove installer from meuns on install
+ 
+ -- anticapitalista <antiX@operamail.com> Thu, 18 Jun 2015 22:22:00 +0200
+
+
 antix-installer (0.6.8) unstable; urgency=low
  
   * Remove install icon from rox-desktop on save desktop option

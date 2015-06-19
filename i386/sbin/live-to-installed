@@ -56,7 +56,7 @@ main() {
 
     del_line      "toram-eject"              $ds_startup
     del_line      "persist-config"           $ds_startup
-    del_line_skel "gksu antixsources.sh"     ".%s/menu"
+    del_line_skel "antixsources.sh"          ".%s/menu"
     del_line_skel "antixsources.desktop"     $rox_pb
     rm_file_skel  "Desktop/Install.desktop"
 
