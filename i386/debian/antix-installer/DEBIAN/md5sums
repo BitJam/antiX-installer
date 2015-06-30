@@ -1,5 +1,5 @@
 8e84a4aba2b6fd867827b33e8fada54a  usr/sbin/live-to-installed
-2c2fe22fb29678936186c75988d39e14  usr/sbin/minstall
+9bcf45185776d1236771404a57017a9c  usr/sbin/minstall
 12ed3ca6b71fd2d77a2cfc9f03d9a68a  usr/share/antiX-installer/locale/minstall_ca.qm
 53f4e29f721ae2bf847b93f27a71be16  usr/share/antiX-installer/locale/minstall_cs.qm
 345d3292c039817a5a7e64c6c846ffd6  usr/share/antiX-installer/locale/minstall_de.qm
@@ -22,6 +22,6 @@ d75268226e12da9c424db776edfedd8d  usr/share/antiX/locales.template
 528e0b3720a23ae94b7cc5d66ec3608e  usr/share/doc/antix-installer/MEPIS_Collective_Work_License
 5491a15e54114ae98f41cff2b0d4e864  usr/share/doc/antix-installer/NOTICE
 89542d1e5c7fddd369b47280b84894fe  usr/share/doc/antix-installer/antiX
-2cdabf28bf67b782d308602f4fcb5ca9  usr/share/doc/antix-installer/changelog.gz
+8423470dd100ab8915e1f7999afe22c3  usr/share/doc/antix-installer/changelog.gz
 7ce5d8d43dc2da5a87b5db6845e651ae  usr/share/doc/antix-installer/copyright
 d6c2c459755fea9cd5b9de74b4cb25f7  usr/share/icons/msystem.png

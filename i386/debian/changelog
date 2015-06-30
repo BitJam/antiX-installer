@@ -1,6 +1,13 @@
+antix-installer (0.6.10) unstable; urgency=low
+ 
+  * chown -R user.user for newly created user install
+ 
+ -- anticapitalista <antiX@operamail.com> Thu, 25 Jun 2015 23:28:00 +0200
+
+
 antix-installer (0.6.9) unstable; urgency=low
  
-  * Bugfix to remove installer from meuns on install
+  * Bugfix to remove installer from menus on install
  
  -- anticapitalista <antiX@operamail.com> Thu, 18 Jun 2015 22:22:00 +0200
 
