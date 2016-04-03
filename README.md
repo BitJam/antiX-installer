@@ -1,1 +1,4 @@
-GUI installer for antiX
+MX-installer
+============
+
+Gui installer for MX
