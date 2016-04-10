@@ -92,7 +92,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>7</number>
+      <number>9</number>
      </property>
      <widget class="QWidget" name="Step_0">
       <layout class="QGridLayout">
@@ -161,6 +161,9 @@
             <property name="acceptDrops">
              <bool>false</bool>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(255, 255, 255, 50);</string>
+            </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -219,6 +222,12 @@ p, li { white-space: pre-wrap; }
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>1c. Select type of installation</string>
          </property>
@@ -265,6 +274,12 @@ p, li { white-space: pre-wrap; }
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Leave free space up to:</string>
             </property>
@@ -284,6 +299,12 @@ p, li { white-space: pre-wrap; }
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight</set>
             </property>
@@ -299,6 +320,12 @@ p, li { white-space: pre-wrap; }
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
             </property>
             <property name="text">
              <string>MB </string>
@@ -316,6 +343,12 @@ p, li { white-space: pre-wrap; }
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Auto-install using entire disk </string>
             </property>
@@ -331,6 +364,12 @@ p, li { white-space: pre-wrap; }
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
             </property>
             <property name="text">
              <string>Custom install on existing partitions</string>
@@ -350,6 +389,12 @@ p, li { white-space: pre-wrap; }
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="title">
           <string>1a. Choose disk for installation</string>
@@ -378,6 +423,12 @@ p, li { white-space: pre-wrap; }
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
@@ -389,7 +440,10 @@ p, li { white-space: pre-wrap; }
              </sizepolicy>
             </property>
             <property name="font">
-             <font/>
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
             </property>
             <property name="text">
              <string>Use disk:</string>
@@ -409,6 +463,12 @@ p, li { white-space: pre-wrap; }
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="title">
           <string>1b. Rearrange disk partitions (optional)</string>
@@ -437,6 +497,12 @@ p, li { white-space: pre-wrap; }
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Run partition tool...</string>
             </property>
@@ -449,6 +515,12 @@ p, li { white-space: pre-wrap; }
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
             </property>
             <property name="text">
              <string>Modify partitions:</string>
@@ -1009,6 +1081,9 @@ p, li { white-space: pre-wrap; }
             <property name="acceptDrops">
              <bool>false</bool>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(255, 255, 255, 100);</string>
+            </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -1299,6 +1374,9 @@ p, li { white-space: pre-wrap; }
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(255, 255, 255, 100);</string>
             </property>
             <property name="verticalScrollBarPolicy">
              <enum>Qt::ScrollBarAsNeeded</enum>
@@ -2133,6 +2211,9 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="acceptDrops">
              <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(255, 255, 255, 100);</string>
             </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>

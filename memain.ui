@@ -100,6 +100,25 @@
      <string>Close</string>
     </property>
    </widget>
+   <widget class="QLabel" name="logo">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>430</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../../../usr/share/antiX-installer/antix-globe-3.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QTabWidget" name="mainTabs">
    <property name="geometry">
@@ -122,6 +141,9 @@
      <height>485</height>
     </size>
    </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
      <string>Help</string>
@@ -131,7 +153,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>290</width>
+       <width>295</width>
        <height>471</height>
       </rect>
      </property>
@@ -140,6 +162,12 @@
        <width>290</width>
        <height>455</height>
       </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -157,8 +185,48 @@
       <bool>true</bool>
      </property>
     </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>296</width>
+       <height>470</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap>../../../usr/share/antiX-installer/pseudo-trans.png</pixmap>
+     </property>
+    </widget>
+    <zorder>label_3</zorder>
+    <zorder>mainHelp</zorder>
    </widget>
   </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>781</width>
+     <height>521</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>../../../usr/share/antiX-installer/Consuming_the_light_side.jpg</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <zorder>label</zorder>
+  <zorder>mainFrame</zorder>
+  <zorder>mainTabs</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
