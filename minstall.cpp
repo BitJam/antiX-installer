@@ -1127,13 +1127,14 @@ bool MInstall::setUserName()
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/gshadow");
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/passwd");
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/shadow");
-  replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/slim.conf");
+    replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/slim.conf");
     if (autologinCheckBox->isChecked()) {
         replaceStringInFile("#auto_login", "auto_login", "/mnt/antiX/etc/slim.conf");
         replaceStringInFile("#default_user ", "default_user ", "/mnt/antiX/etc/slim.conf");
     }
     else {
-        replaceStringInFile("autologin-user=", "#autologin-user=", "/mnt/antiX/etc/lightdm/lightdm.conf");
+        replaceStringInFile("auto_login", "#auto_login", "/mnt/antiX/etc/slim.conf");
+        replaceStringInFile("default_user ", "#default_user ", "/mnt/antiX/etc/slim.conf");
     }
     cmd = QString("touch /mnt/antiX/var/mail/%1").arg(userNameEdit->text());
     system(cmd.toUtf8());
@@ -1407,17 +1408,15 @@ void MInstall::setLocale()
     }
     system("cp -f /etc/adjtime /mnt/antiX/etc/");   
 
-    // Set clock format - todo for fluxbox,icewm,jwm,conkyrc?
+    // Set clock format - for icewm,fluxbox,jwm
     if (radio12h->isChecked()) {
-        system("sed -i '/data0=/c\\data0=%l:%M' /home/demo/.config/xfce4/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%l:%M' /mnt/antiX/etc/skel/.config/xfce4/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%l:%M' /mnt/antiX/usr/local/share/appdata/panels/vertical/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%l:%M' /mnt/antiX/usr/local/share/appdata/panels/horizontal/panel/xfce4-orageclock-plugin-1.rc");
+        system("sed -i 's/%H:%M/%l:%M/g' /mnt/antiX/etc/skel/.icewm/preferences");
+        system("sed -i 's/%k:%M/%l:%M/g' /mnt/antiX/etc/skel/.fluxbox/init");
+        system("sed -i 's/%k:%M/%l:%M/g' /mnt/antiX/etc/skel/.jwm/tray");
     } else {
-        system("sed -i '/data0=/c\\data0=%H:%M' /home/demo/.config/xfce4/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%H:%M' /mnt/antiX/etc/skel/.config/xfce4/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%H:%M' /mnt/antiX/usr/local/share/appdata/panels/vertical/panel/xfce4-orageclock-plugin-1.rc");
-        system("sed -i '/data0=/c\\data0=%H:%M' /mnt/antiX/usr/local/share/appdata/panels/horizontal/panel/xfce4-orageclock-plugin-1.rc");
+        system("sed -i 's/%H:%M/%H:%M/g' /mnt/antiX/etc/skel/.icewm/preferences");
+        system("sed -i 's/%k:%M/%k:%M/g' /mnt/antiX/etc/skel/.fluxbox/init");
+        system("sed -i 's/%k:%M/%k:%M/g' /mnt/antiX/etc/skel/.jwm/tray");
     }
 
     // localize repos
@@ -1859,7 +1858,7 @@ void MInstall::pageDisplayed(int next)
         ((MMain *)mmn)->setHelpText(tr("<p><b>Congratulations!</b><br/>You have completed the installation of ") + " antiX Linux." + tr("</p>"
                                                                                                                                      "<p><b>Finding Applications</b><br/>There are hundreds of excellent applications installed with antiX Linux. "
                                                                                                                                      "The best way to learn about them is to browse through the Menu and try them. "
-                                                                                                                                     "Many of the apps were developed specifically for the Xfce environment. "
+                                                                                                                                     "Many of the apps were developed specifically for the IceWM/fluxbox/jwm environment. "
                                                                                                                                      "These are shown in the main menus. "
                                                                                                                                      "<p>In addition antiX Linux includes many standard Linux applications that are run only from the commandline and therefore do not show up in Menu.</p>"));
         nextButton->setEnabled(true);
@@ -2495,7 +2494,7 @@ void MInstall::copyDone(int, QProcess::ExitStatus exitStatus)
         system("/bin/rm -rf /mnt/antiX/home/demo");
         system("/bin/rm -rf /mnt/antiX/media/sd*");
         system("/bin/rm -rf /mnt/antiX/media/hd*");
-        system("/bin/mv -f /mnt/antiX/etc/X11/xorg.conf /mnt/antiX/etc/X11/xorg.conf.live >/dev/null 2>&1");
+    //system("/bin/mv -f /mnt/antiX/etc/X11/xorg.conf /mnt/antiX/etc/X11/xorg.conf.live >/dev/null 2>&1");
 
         // guess localtime vs UTC
         if (getCmdOut("guess-hwclock") == "localtime") {

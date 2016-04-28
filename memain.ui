@@ -113,7 +113,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>../../../usr/share/antiX-installer/antix-globe-3.png</pixmap>
+     <pixmap>../../../usr/share/antix-installer/antix-globe-3.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -198,7 +198,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>../../../usr/share/antiX-installer/pseudo-trans.png</pixmap>
+      <pixmap>../../../usr/share/antix-installer/pseudo-trans.png</pixmap>
      </property>
     </widget>
     <zorder>label_3</zorder>
@@ -218,7 +218,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>../../../usr/share/antiX-installer/Consuming_the_light_side.jpg</pixmap>
+    <pixmap>../../../usr/share/antix-installer/theme.jpg</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

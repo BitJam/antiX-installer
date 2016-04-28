@@ -12,3 +12,4 @@ minstall.desktop                usr/share/applications/antix
 msystem.png                     usr/share/icons
 msystem.png                     usr/share/pixmaps
 scripts/rc.local.install        usr/share/antiX
+themes/* 			usr/share/antix-installer

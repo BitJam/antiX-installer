@@ -1,3 +1,17 @@
+antix-installer (0.7.3.1) unstable; urgency=medium
+
+  * New theme to prettify installer 
+  * remove copying xorg.conf to xorg.conf.live
+  * fixed autologin
+
+ -- anticapitalista <antiX@operamail.com>  Fri, 15 Apr 2016 07:43:13 -0400
+
+antix-installer (0.7.2) unstable; urgency=medium
+
+  * Changes to live-to-install 
+
+ -- anticapitalista <antiX@operamail.com>  Sun, 03 Apr 2016 06:51:15 -0400
+
 antix-installer (0.7.1+nmu1) unstable; urgency=medium
 
   * Set root partition label to antiX16 
