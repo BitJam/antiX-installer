@@ -1,3 +1,9 @@
+antix-installer (0.7.3.4) UNRELEASED; urgency=medium
+
+  * Removed cpaital letters block
+
+ -- anticapitalista <antix@operamail.com>  Sun, 19 Jun 2016 13:50:54 +0300
+
 antix-installer (0.7.3.3) unstable; urgency=medium
 
   * Fixed correct path to issue file 
