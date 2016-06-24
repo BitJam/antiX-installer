@@ -1213,6 +1213,12 @@ bool MInstall::setUserInfo()
                                  "2 characters long. Please select\n"
                                  "a longer name before proceeding."));
         return false;
+    } else if (!userNameEdit->text().contains(QRegExp("^[a-zA-Z_][a-zA-Z0-9_-]*[$]?$"))) {
+        QMessageBox::critical(0, QString::null,
+                              tr("The user name needs be lower case and it\n"
+                                 "cannot contain special characters or spaces\n"
+                                 "please choose another name before proceeding."));
+        return false;
     }
     if (strlen(userPasswordEdit->text().toUtf8()) < 2) {
         QMessageBox::critical(0, QString::null,
