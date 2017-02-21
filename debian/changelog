@@ -1,8 +1,28 @@
-antix-installer (0.7.3.4) UNRELEASED; urgency=medium
+antix-installer (0.8.0) unstable; urgency=medium
 
-  * Removed cpaital letters block
+  * Bumped version for stretch release
+  * Changed rc2-5 numbers to turn off on install
 
- -- anticapitalista <antix@operamail.com>  Sun, 19 Jun 2016 13:50:54 +0300
+ -- anticapitalista <antix@operamail.com>  Mon, 20 Feb 2017 22:05:07 +0200
+
+antix-installer (0.7.3.8) unstable; urgency=medium
+
+  * Added lightdm settings
+  * Minor text edits
+
+ -- anticapitalista <antix@operamail.com>  Sat, 04 Feb 2017 18:08:29 +0200
+
+antix-installer (0.7.3.6) unstable; urgency=medium
+
+  * Changed size limitation to 2 GB
+
+ -- anticapitalista <antix@operamail.com>  Sun, 10 Jul 2016 17:18:08 +0100
+
+antix-installer (0.7.3.5) unstable; urgency=medium
+
+  * Removed capital letters block, but kept other restrictions
+
+ -- anticapitalista <antix@operamail.com>  Fri, 24 Jun 2016 13:39:09 +0300
 
 antix-installer (0.7.3.3) unstable; urgency=medium
 

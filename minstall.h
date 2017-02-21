@@ -154,4 +154,5 @@ private slots:
     void on_viewServicesButton_clicked();
     void on_homeCombo_activated(const QString &arg1);
     void on_grubBootCombo_activated(QString item = "");
+    void on_closeButton_clicked();
 };

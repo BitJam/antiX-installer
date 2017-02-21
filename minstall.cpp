@@ -450,7 +450,7 @@ bool MInstall::makeDefaultPartitions()
     QString drv = QString("/dev/%1").arg(diskCombo->currentText().section(" ", 0, 0));
     QString rootdev = QString(drv).append("1");
     QString swapdev = QString(drv).append("2");
-    QString msg = QString(tr("Ok to format and use the entire disk (%1) for antiX Linux?")).arg(drv);
+    QString msg = QString(tr("OK to format and use the entire disk (%1) for antiX Linux?")).arg(drv);
     ans = QMessageBox::information(0, QString::null, msg,
                                    tr("Yes"), tr("No"));
     if (ans != 0) {
@@ -629,9 +629,9 @@ bool MInstall::makeChosenPartitions()
         }
     }
     if (!(saveHomeCheck->isChecked() && homedev.compare("/dev/root") == 0)) {
-        msg = QString(tr("Ok to format and destroy all data on \n%1 for the / (root) partition?")).arg(rootdev);
+        msg = QString(tr("OK to format and destroy all data on \n%1 for the / (root) partition?")).arg(rootdev);
     } else {
-        msg = QString(tr("All data on %1 will be deleted, except for /home\nOk to continue?")).arg(rootdev);
+        msg = QString(tr("All data on %1 will be deleted, except for /home\nOK to continue?")).arg(rootdev);
     }
     ans = QMessageBox::warning(0, QString::null, msg,
                                tr("Yes"), tr("No"));
@@ -641,16 +641,22 @@ bool MInstall::makeChosenPartitions()
     }
 
     // format swap
-    if (swapdev.compare("/dev/none") != 0) {
-        msg = QString(tr("Ok to format and destroy all data on \n%1 for the swap partition?")).arg(swapdev);
-        ans = QMessageBox::warning(0, QString::null, msg,
-                                   tr("Yes"), tr("No"));
-        if (ans != 0) {
-            // don't format--stop install
-            return false;
-        }
-    }
 
+        //if partition chosen is already swap, don't do anything
+
+        cmd = QString("partition-info %1 |grep swap").arg(swapdev);
+
+        if (system(cmd.toUtf8()) != 0) {
+            if (swapdev.compare("/dev/none") != 0) {
+                msg = QString(tr("OK to format and destroy all data on \n%1 for the swap partition?")).arg(swapdev);
+                ans = QMessageBox::warning(0, QString::null, msg,
+                                           tr("Yes"), tr("No"));
+                if (ans != 0) {
+                    // don't format--stop install
+                    return false;
+                }
+            }
+        }
     // format /home?
     if (homedev.compare("/dev/root") != 0) {
         cmd = QString("partition-info is-linux=%1").arg(homedev);
@@ -664,9 +670,9 @@ bool MInstall::makeChosenPartitions()
             }
         }
         if (saveHomeCheck->isChecked()) {
-            msg = QString(tr("Ok to reuse (no reformat) %1 as the /home partition?")).arg(homedev);
+            msg = QString(tr("OK to reuse (no reformat) %1 as the /home partition?")).arg(homedev);
         } else {
-            msg = QString(tr("Ok to format and destroy all data on %1 for the /home partition?")).arg(homedev);
+            msg = QString(tr("OK to format and destroy all data on %1 for the /home partition?")).arg(homedev);
         }
 
         ans = QMessageBox::warning(0, QString::null, msg,
@@ -697,31 +703,35 @@ bool MInstall::makeChosenPartitions()
         if (swapoff(rootdev.toUtf8()) != 0) {
         }
     }
+    //if swap exists, do nothing
 
-    if (swapdev.compare("/dev/none") != 0) {
-        if (swapoff(swapdev.toUtf8()) != 0) {
-            cmd = QString("pumount %1").arg(swapdev);
-            if (system(cmd.toUtf8()) != 0) {
+    cmd = QString("partition-info %1 |grep swap").arg(swapdev);
+
+    if (system(cmd.toUtf8()) != 0) {
+        if (swapdev.compare("/dev/none") != 0) {
+            if (swapoff(swapdev.toUtf8()) != 0) {
+                cmd = QString("pumount %1").arg(swapdev);
+                if (system(cmd.toUtf8()) != 0) {
+                }
             }
+            updateStatus(tr("Formatting swap partition"), 2);
+            // always set type
+            if (gpt) {
+                cmd = QString("/sbin/sgdisk /dev/%1 --typecode=%2:8200").arg(swapsplit[0]).arg(swapsplit[1]);
+            } else {
+                cmd = QString("/sbin/sfdisk /dev/%1 --change-id %2 82").arg(swapsplit[0]).arg(swapsplit[1]);
+            }
+            system(cmd.toUtf8());
+            system("sleep 1");
+            if (!makeSwapPartition(swapdev)) {
+                return false;
+            }
+            // enable the new swap partition asap
+            system("sleep 1");
+            system("make-fstab -s");
+            swapon(swapdev.toUtf8(),0);
         }
-        updateStatus(tr("Formatting swap partition"), 2);
-        // always set type
-        if (gpt) {
-            cmd = QString("/sbin/sgdisk /dev/%1 --typecode=%2:8200").arg(swapsplit[0]).arg(swapsplit[1]);
-        } else {
-            cmd = QString("/sbin/sfdisk /dev/%1 --change-id %2 82").arg(swapsplit[0]).arg(swapsplit[1]);
-        }
-        system(cmd.toUtf8());
-        system("sleep 1");
-        if (!makeSwapPartition(swapdev)) {
-            return false;
-        }
-        // enable the new swap partition asap
-        system("sleep 1");
-        system("make-fstab -s");
-        swapon(swapdev.toUtf8(),0);
     }
-
     // maybe format root
     if (!(saveHomeCheck->isChecked() && homedev.compare("/dev/root") == 0)) {
         updateStatus(tr("Formatting the / (root) partition"), 3);
@@ -913,7 +923,7 @@ bool MInstall::installLoader()
     }
 
     // install Grub?
-    QString msg = QString( tr("Ok to install GRUB bootloader at %1 ?")).arg(boot);
+    QString msg = QString( tr("OK to install GRUB bootloader at %1 ?")).arg(boot);
     int ans = QMessageBox::warning(this, QString::null, msg,
                                    tr("Yes"), tr("No"));
     if (ans != 0) {
@@ -1128,6 +1138,7 @@ bool MInstall::setUserName()
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/passwd");
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/shadow");
     replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/slim.conf");
+    replaceStringInFile("demo", userNameEdit->text(), "/mnt/antiX/etc/lightdm/lightdm.conf");
     if (autologinCheckBox->isChecked()) {
         replaceStringInFile("#auto_login", "auto_login", "/mnt/antiX/etc/slim.conf");
         replaceStringInFile("#default_user ", "default_user ", "/mnt/antiX/etc/slim.conf");
@@ -1135,6 +1146,7 @@ bool MInstall::setUserName()
     else {
         replaceStringInFile("auto_login", "#auto_login", "/mnt/antiX/etc/slim.conf");
         replaceStringInFile("default_user ", "#default_user ", "/mnt/antiX/etc/slim.conf");
+        replaceStringInFile("autologin-user=", "#autologin-user=", "/mnt/antiX/etc/lightdm/lightdm.conf");
     }
     cmd = QString("touch /mnt/antiX/var/mail/%1").arg(userNameEdit->text());
     system(cmd.toUtf8());
@@ -1215,9 +1227,9 @@ bool MInstall::setUserInfo()
         return false;
     } else if (!userNameEdit->text().contains(QRegExp("^[a-zA-Z_][a-zA-Z0-9_-]*[$]?$"))) {
         QMessageBox::critical(0, QString::null,
-                              tr("The user name needs be lower case and it\n"
-                                 "cannot contain special characters or spaces\n"
-                                 "please choose another name before proceeding."));
+                              tr("The user name cannot contain special\n"
+                                 " characters or spaces.\n"
+                                 "Please choose another name before proceeding."));
         return false;
     }
     if (strlen(userPasswordEdit->text().toUtf8()) < 2) {
@@ -1428,143 +1440,143 @@ void MInstall::setServices()
     setCursor(QCursor(Qt::WaitCursor));
 
     if (cpufreqItem != NULL && cpufreqItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K97cpufrequtils /mnt/antiX/etc/rc5.d/S03cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K97cpufrequtils /mnt/antiX/etc/rc4.d/S03cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K97cpufrequtils /mnt/antiX/etc/rc3.d/S03cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K97cpufrequtils /mnt/antiX/etc/rc2.d/S03cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc5.d/K98loadcpufreq /mnt/antiX/etc/rc5.d/S02loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98loadcpufreq /mnt/antiX/etc/rc4.d/S02loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98loadcpufreq /mnt/antiX/etc/rc3.d/S02loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98loadcpufreq /mnt/antiX/etc/rc2.d/S02loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K96cpufrequtils /mnt/antiX/etc/rc5.d/S04cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K96cpufrequtils /mnt/antiX/etc/rc4.d/S04cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K96cpufrequtils /mnt/antiX/etc/rc3.d/S04cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K96cpufrequtils /mnt/antiX/etc/rc2.d/S04cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97loadcpufreq /mnt/antiX/etc/rc5.d/S03loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97loadcpufreq /mnt/antiX/etc/rc4.d/S03loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97loadcpufreq /mnt/antiX/etc/rc3.d/S03loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97loadcpufreq /mnt/antiX/etc/rc2.d/S03loadcpufreq >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S03cpufrequtils /mnt/antiX/etc/rc5.d/K97cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S03cpufrequtils /mnt/antiX/etc/rc4.d/K97cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S03cpufrequtils /mnt/antiX/etc/rc3.d/K97cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S03cpufrequtils /mnt/antiX/etc/rc2.d/K97cpufrequtils >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc5.d/S02loadcpufreq /mnt/antiX/etc/rc5.d/K98loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02loadcpufreq /mnt/antiX/etc/rc4.d/K98loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02loadcpufreq /mnt/antiX/etc/rc3.d/K98loadcpufreq >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02loadcpufreq /mnt/antiX/etc/rc2.d/K98loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S04cpufrequtils /mnt/antiX/etc/rc5.d/K96cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S04cpufrequtils /mnt/antiX/etc/rc4.d/K96cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S04cpufrequtils /mnt/antiX/etc/rc3.d/K96cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S04cpufrequtils /mnt/antiX/etc/rc2.d/K96cpufrequtils >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03loadcpufreq /mnt/antiX/etc/rc5.d/K97loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03loadcpufreq /mnt/antiX/etc/rc4.d/K97loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03loadcpufreq /mnt/antiX/etc/rc3.d/K97loadcpufreq >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03loadcpufreq /mnt/antiX/etc/rc2.d/K97loadcpufreq >/dev/null 2>&1");
     }
 
     if (wicdItem != NULL && wicdItem->checkState(0) == Qt::Checked) {
-    system("mv -f /mnt/antiX/etc/rc5.d/K01wicd /mnt/antiX/etc/rc5.d/S03wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc4.d/K01wicd /mnt/antiX/etc/rc4.d/S03wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc3.d/K01wicd /mnt/antiX/etc/rc3.d/S03wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc2.d/K01wicd /mnt/antiX/etc/rc2.d/S03wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc5.d/K01wicd /mnt/antiX/etc/rc5.d/S04wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc4.d/K01wicd /mnt/antiX/etc/rc4.d/S04wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc3.d/K01wicd /mnt/antiX/etc/rc3.d/S04wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc2.d/K01wicd /mnt/antiX/etc/rc2.d/S04wicd >/dev/null 2>&1");
   } else {
-    system("mv -f /mnt/antiX/etc/rc5.d/S03wicd /mnt/antiX/etc/rc5.d/K01wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc4.d/S03wicd /mnt/antiX/etc/rc4.d/K01wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc3.d/S03wicd /mnt/antiX/etc/rc3.d/K01wicd >/dev/null 2>&1");
-    system("mv -f /mnt/antiX/etc/rc2.d/S03wicd /mnt/antiX/etc/rc2.d/K01wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc5.d/S04wicd /mnt/antiX/etc/rc5.d/K01wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc4.d/S04wicd /mnt/antiX/etc/rc4.d/K01wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc3.d/S04wicd /mnt/antiX/etc/rc3.d/K01wicd >/dev/null 2>&1");
+    system("mv -f /mnt/antiX/etc/rc2.d/S04wicd /mnt/antiX/etc/rc2.d/K01wicd >/dev/null 2>&1");
   }
 
     if (bluetoothItem != NULL && bluetoothItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K01bluetooth /mnt/antiX/etc/rc5.d/S03bluetooth >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K01bluetooth /mnt/antiX/etc/rc4.d/S03bluetooth >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K01bluetooth /mnt/antiX/etc/rc3.d/S03bluetooth >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K01bluetooth /mnt/antiX/etc/rc2.d/S03bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K01bluetooth /mnt/antiX/etc/rc5.d/S04bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K01bluetooth /mnt/antiX/etc/rc4.d/S04bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K01bluetooth /mnt/antiX/etc/rc3.d/S04bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K01bluetooth /mnt/antiX/etc/rc2.d/S04bluetooth >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S03bluetooth /mnt/antiX/etc/rc5.d/K01bluetooth >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S03bluetooth /mnt/antiX/etc/rc4.d/K01bluetooth >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S03bluetooth /mnt/antiX/etc/rc3.d/K01bluetooth>/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S03bluetooth /mnt/antiX/etc/rc2.d/K01bluetooth>/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S04bluetooth /mnt/antiX/etc/rc5.d/K01bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S04bluetooth /mnt/antiX/etc/rc4.d/K01bluetooth >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S04bluetooth /mnt/antiX/etc/rc3.d/K01bluetooth>/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S04bluetooth /mnt/antiX/etc/rc2.d/K01bluetooth>/dev/null 2>&1");
     }
 
     if (sanedItem != NULL && sanedItem->checkState(0) == Qt::Checked) {
-    	system("mv -f /mnt/antiX/etc/rc5.d/K01saned /mnt/antiX/etc/rc5.d/S04saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/K01saned /mnt/antiX/etc/rc4.d/S04saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/K01saned /mnt/antiX/etc/rc3.d/S04saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/K01saned /mnt/antiX/etc/rc2.d/S04saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/K01saned /mnt/antiX/etc/rc5.d/S05saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/K01saned /mnt/antiX/etc/rc4.d/S05saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/K01saned /mnt/antiX/etc/rc3.d/S05saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/K01saned /mnt/antiX/etc/rc2.d/S05saned >/dev/null 2>&1");
     } else {
-    	system("mv -f /mnt/antiX/etc/rc5.d/S04saned /mnt/antiX/etc/rc5.d/K01saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/S04saned /mnt/antiX/etc/rc4.d/K01saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/S04saned /mnt/antiX/etc/rc3.d/K01saned >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/S04saned /mnt/antiX/etc/rc2.d/K01saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/S05saned /mnt/antiX/etc/rc5.d/K01saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/S05saned /mnt/antiX/etc/rc4.d/K01saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/S05saned /mnt/antiX/etc/rc3.d/K01saned >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/S05saned /mnt/antiX/etc/rc2.d/K01saned >/dev/null 2>&1");
     }
 
     if (sshItem != NULL && sshItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K98ssh /mnt/antiX/etc/rc5.d/S02ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98ssh /mnt/antiX/etc/rc4.d/S02ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98ssh /mnt/antiX/etc/rc3.d/S02ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98ssh /mnt/antiX/etc/rc2.d/S02ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97ssh /mnt/antiX/etc/rc5.d/S03ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97ssh /mnt/antiX/etc/rc4.d/S03ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97ssh /mnt/antiX/etc/rc3.d/S03ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97ssh /mnt/antiX/etc/rc2.d/S03ssh >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02ssh /mnt/antiX/etc/rc5.d/K98ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02ssh /mnt/antiX/etc/rc4.d/K98ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02ssh /mnt/antiX/etc/rc3.d/K98ssh >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02ssh /mnt/antiX/etc/rc2.d/K98ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03ssh /mnt/antiX/etc/rc5.d/K97ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03ssh /mnt/antiX/etc/rc4.d/K97sh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03ssh /mnt/antiX/etc/rc3.d/K97ssh >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03ssh /mnt/antiX/etc/rc2.d/K97ssh >/dev/null 2>&1");
     }
 
     if (avahiItem != NULL && avahiItem->checkState(0) == Qt::Checked) {
-    	system("mv -f /mnt/antiX/etc/rc5.d/K02avahi-daemon /mnt/antiX/etc/rc5.d/S03avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/K02avahi-daemon /mnt/antiX/etc/rc4.d/S03avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/K02avahi-daemon /mnt/antiX/etc/rc3.d/S03avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/K02avahi-daemon /mnt/antiX/etc/rc2.d/S03avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/K01avahi-daemon /mnt/antiX/etc/rc5.d/S04avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/K01avahi-daemon /mnt/antiX/etc/rc4.d/S04avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/K01avahi-daemon /mnt/antiX/etc/rc3.d/S04avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/K01avahi-daemon /mnt/antiX/etc/rc2.d/S04avahi-daemon >/dev/null 2>&1");
     } else {
-    	system("mv -f /mnt/antiX/etc/rc5.d/S03avahi-daemon /mnt/antiX/etc/rc5.d/K02avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/S03avahi-daemon /mnt/antiX/etc/rc4.d/K02avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/S03avahi-daemon /mnt/antiX/etc/rc3.d/K02avahi-daemon >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/S03avahi-daemon /mnt/antiX/etc/rc2.d/K02avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/S04avahi-daemon /mnt/antiX/etc/rc5.d/K01avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/S04avahi-daemon /mnt/antiX/etc/rc4.d/K01avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/S04avahi-daemon /mnt/antiX/etc/rc3.d/K01avahi-daemon >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/S04avahi-daemon /mnt/antiX/etc/rc2.d/K01avahi-daemon >/dev/null 2>&1");
     }
   
     if (acpidItem != NULL && acpidItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K98acpid /mnt/antiX/etc/rc5.d/S02acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98acpid /mnt/antiX/etc/rc4.d/S02acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98acpid /mnt/antiX/etc/rc3.d/S02acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98acpid /mnt/antiX/etc/rc2.d/S02acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97acpid /mnt/antiX/etc/rc5.d/S03acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97acpid /mnt/antiX/etc/rc4.d/S03acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97acpid /mnt/antiX/etc/rc3.d/S03acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97acpid /mnt/antiX/etc/rc2.d/S03acpid >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02acpid /mnt/antiX/etc/rc5.d/K98acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02acpid /mnt/antiX/etc/rc4.d/K98acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02acpid /mnt/antiX/etc/rc3.d/K98acpid >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02acpid /mnt/antiX/etc/rc2.d/K98acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03acpid /mnt/antiX/etc/rc5.d/K97acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03acpid /mnt/antiX/etc/rc4.d/K97acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03acpid /mnt/antiX/etc/rc3.d/K97acpid >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03acpid /mnt/antiX/etc/rc2.d/K97acpid >/dev/null 2>&1");
     }
 
-    if (gdomapItem != NULL && gdomapItem->checkState(0) == Qt::Checked) {
-    	system("mv -f /mnt/antiX/etc/rc5.d/K01gdomap /mnt/antiX/etc/rc5.d/S02gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/K01gdomap /mnt/antiX/etc/rc4.d/S02gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/K01gdomap /mnt/antiX/etc/rc3.d/S02gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/K01gdomap /mnt/antiX/etc/rc2.d/S02gdomap >/dev/null 2>&1");
+    if (acpisupportItem != NULL && acpisupportItem->checkState(0) == Qt::Checked) {
+    	system("mv -f /mnt/antiX/etc/rc5.d/K01acpi-support /mnt/antiX/etc/rc5.d/S03acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/K01acpi-support /mnt/antiX/etc/rc4.d/S03acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/K01acpi-support /mnt/antiX/etc/rc3.d/S03acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/K01acpi-support /mnt/antiX/etc/rc2.d/S03acpi-support >/dev/null 2>&1");
     } else {
-    	system("mv -f /mnt/antiX/etc/rc5.d/S02gdomap /mnt/antiX/etc/rc5.d/K01gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/S02gdomap /mnt/antiX/etc/rc4.d/K01gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/S02gdomap /mnt/antiX/etc/rc3.d/K01gdomap >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/S02gdomap /mnt/antiX/etc/rc2.d/K01gdomap >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/S03acpi-support /mnt/antiX/etc/rc5.d/K01acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/S03acpi-support /mnt/antiX/etc/rc4.d/K01acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/S03acpi-support /mnt/antiX/etc/rc3.d/K01acpi-support >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/S03acpi-support /mnt/antiX/etc/rc2.d/K01acpi-support >/dev/null 2>&1");
     }
 
     if (smartmontoolsItem != NULL && smartmontoolsItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K01smartmontools /mnt/antiX/etc/rc5.d/S02smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K01smartmontools /mnt/antiX/etc/rc4.d/S02smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K01smartmontools /mnt/antiX/etc/rc3.d/S02smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K01smartmontools /mnt/antiX/etc/rc2.d/S02smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K01smartmontools /mnt/antiX/etc/rc5.d/S03smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K01smartmontools /mnt/antiX/etc/rc4.d/S03smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K01smartmontools /mnt/antiX/etc/rc3.d/S03smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K01smartmontools /mnt/antiX/etc/rc2.d/S03smartmontools >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02smartmontools /mnt/antiX/etc/rc5.d/K01smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02smartmontools /mnt/antiX/etc/rc4.d/K01smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02smartmontools /mnt/antiX/etc/rc3.d/K01smartmontools >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02smartmontools /mnt/antiX/etc/rc2.d/K01smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03smartmontools /mnt/antiX/etc/rc5.d/K01smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03smartmontools /mnt/antiX/etc/rc4.d/K01smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03smartmontools /mnt/antiX/etc/rc3.d/K01smartmontools >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03smartmontools /mnt/antiX/etc/rc2.d/K01smartmontools >/dev/null 2>&1");
     }
 
     if (rsyncItem != NULL && rsyncItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K98rsync /mnt/antiX/etc/rc5.d/S02rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98rsync /mnt/antiX/etc/rc4.d/S02rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98rsync /mnt/antiX/etc/rc3.d/S02rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98rsync /mnt/antiX/etc/rc2.d/S02rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97rsync /mnt/antiX/etc/rc5.d/S03rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97rsync /mnt/antiX/etc/rc4.d/S03rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97rsync /mnt/antiX/etc/rc3.d/S03rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97rsync /mnt/antiX/etc/rc2.d/S03rsync >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02rsync /mnt/antiX/etc/rc5.d/K98rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02rsync /mnt/antiX/etc/rc4.d/K98rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02rsync /mnt/antiX/etc/rc3.d/K98rsync >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02rsync /mnt/antiX/etc/rc2.d/K98rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03rsync /mnt/antiX/etc/rc5.d/K97rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03rsync /mnt/antiX/etc/rc4.d/K97rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03rsync /mnt/antiX/etc/rc3.d/K97rsync >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03rsync /mnt/antiX/etc/rc2.d/K97rsync >/dev/null 2>&1");
     }
 
     if (cupsItem != NULL && cupsItem->checkState(0) == Qt::Checked) {
-    	system("mv -f /mnt/antiX/etc/rc5.d/K01cups /mnt/antiX/etc/rc5.d/S04cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/K01cups /mnt/antiX/etc/rc4.d/S04cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/K01cups /mnt/antiX/etc/rc3.d/S04cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/K01cups /mnt/antiX/etc/rc2.d/S04cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/K01cups /mnt/antiX/etc/rc5.d/S05cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/K01cups /mnt/antiX/etc/rc4.d/S05cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/K01cups /mnt/antiX/etc/rc3.d/S05cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/K01cups /mnt/antiX/etc/rc2.d/S05cups >/dev/null 2>&1");
     } else {
-    	system("mv -f /mnt/antiX/etc/rc5.d/S04cups /mnt/antiX/etc/rc5.d/K01cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc4.d/S04cups /mnt/antiX/etc/rc4.d/K01cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc3.d/S04cups /mnt/antiX/etc/rc3.d/K01cups >/dev/null 2>&1");
-    	system("mv -f /mnt/antiX/etc/rc2.d/S04cups /mnt/antiX/etc/rc2.d/K01cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc5.d/S05cups /mnt/antiX/etc/rc5.d/K01cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc4.d/S05cups /mnt/antiX/etc/rc4.d/K01cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc3.d/S05cups /mnt/antiX/etc/rc3.d/K01cups >/dev/null 2>&1");
+    	system("mv -f /mnt/antiX/etc/rc2.d/S05cups /mnt/antiX/etc/rc2.d/K01cups >/dev/null 2>&1");
     }
 
     if (uuiddItem != NULL && uuiddItem->checkState(0) == Qt::Checked) {
@@ -1580,39 +1592,39 @@ void MInstall::setServices()
     }
 
     if (dbusItem != NULL && dbusItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K98dbus /mnt/antiX/etc/rc5.d/S02dbus  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98dbus /mnt/antiX/etc/rc4.d/S02dbus  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98dbus /mnt/antiX/etc/rc3.d/S02dbus  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98dbus /mnt/antiX/etc/rc2.d/S02dbus  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97dbus /mnt/antiX/etc/rc5.d/S03dbus  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97dbus /mnt/antiX/etc/rc4.d/S03dbus  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97dbus /mnt/antiX/etc/rc3.d/S03dbus  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97dbus /mnt/antiX/etc/rc2.d/S03dbus  >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02dbus  /mnt/antiX/etc/rc5.d/K98dbus >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02dbus  /mnt/antiX/etc/rc4.d/K98dbus >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02dbus  /mnt/antiX/etc/rc3.d/K98dbus >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02dbus  /mnt/antiX/etc/rc2.d/K98dbus >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03dbus  /mnt/antiX/etc/rc5.d/K97dbus >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03dbus  /mnt/antiX/etc/rc4.d/K97dbus >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03dbus  /mnt/antiX/etc/rc3.d/K97dbus >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03dbus  /mnt/antiX/etc/rc2.d/K97dbus >/dev/null 2>&1");
     }
 
     if (cronItem != NULL && cronItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K98cron /mnt/antiX/etc/rc5.d/S02cron  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K98cron /mnt/antiX/etc/rc4.d/S02cron  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K98cron /mnt/antiX/etc/rc3.d/S02cron  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K98cron /mnt/antiX/etc/rc2.d/S02cron  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K97cron /mnt/antiX/etc/rc5.d/S03cron  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K97cron /mnt/antiX/etc/rc4.d/S03cron  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K97cron /mnt/antiX/etc/rc3.d/S03cron  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K97cron /mnt/antiX/etc/rc2.d/S03cron  >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02cron  /mnt/antiX/etc/rc5.d/K98cron >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02cron  /mnt/antiX/etc/rc4.d/K98cron >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02cron  /mnt/antiX/etc/rc3.d/K98cron >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02cron  /mnt/antiX/etc/rc2.d/K98cron >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03cron  /mnt/antiX/etc/rc5.d/K97cron >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03cron  /mnt/antiX/etc/rc4.d/K97cron >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03cron  /mnt/antiX/etc/rc3.d/K97cron >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03cron  /mnt/antiX/etc/rc2.d/K97cron >/dev/null 2>&1");
     }
 
     if (gpmItem != NULL && gpmItem->checkState(0) == Qt::Checked) {
-        system("mv -f /mnt/antiX/etc/rc5.d/K01gpm /mnt/antiX/etc/rc5.d/S02gpm  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/K01gpm /mnt/antiX/etc/rc4.d/S02gpm  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/K01gpm /mnt/antiX/etc/rc3.d/S02gpm  >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/K01gpm /mnt/antiX/etc/rc2.d/S02gpm  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/K01gpm /mnt/antiX/etc/rc5.d/S03gpm  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/K01gpm /mnt/antiX/etc/rc4.d/S03gpm  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/K01gpm /mnt/antiX/etc/rc3.d/S03gpm  >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/K01gpm /mnt/antiX/etc/rc2.d/S03gpm  >/dev/null 2>&1");
     } else {
-        system("mv -f /mnt/antiX/etc/rc5.d/S02gpm  /mnt/antiX/etc/rc5.d/K01gpm >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc4.d/S02gpm  /mnt/antiX/etc/rc4.d/K01gpm >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc3.d/S02gpm  /mnt/antiX/etc/rc3.d/K01gpm >/dev/null 2>&1");
-        system("mv -f /mnt/antiX/etc/rc2.d/S02gpm  /mnt/antiX/etc/rc2.d/K01gpm >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc5.d/S03gpm  /mnt/antiX/etc/rc5.d/K01gpm >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc4.d/S03gpm  /mnt/antiX/etc/rc4.d/K01gpm >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc3.d/S03gpm  /mnt/antiX/etc/rc3.d/K01gpm >/dev/null 2>&1");
+        system("mv -f /mnt/antiX/etc/rc2.d/S03gpm  /mnt/antiX/etc/rc2.d/K01gpm >/dev/null 2>&1");
     }
 
     if (sudoItem != NULL && sudoItem->checkState(0) == Qt::Checked) {
@@ -1772,7 +1784,7 @@ void MInstall::pageDisplayed(int next)
         setCursor(QCursor(Qt::WaitCursor));
         tipsEdit->setText(tr("<p><b>Special Thanks</b><br/>Thanks to everyone who has chosen to support antiX Linux with their time, money, suggestions, work, praise, ideas, promotion, and/or encouragement.</p>"
                              "<p>Without you there would be no antiX Linux.</p>"
-                             "<p>anticapitalista, Mepis and antiX Communities</p>"));
+                             "<p>anticapitalista, MX and antiX Communities</p>"));
         ((MMain *)mmn)->setHelpText(tr("<p><b>Installation in Progress</b><br/>"
                                        "antiX Linux is installing.  For a fresh install, this will probably take 3-20 minutes, depending on the speed of your system and the size of any partitions you are reformatting.</p>"
                                        "<p>If you click the Abort button, the installation will be stopped as soon as possible.</p>"));
@@ -1933,7 +1945,7 @@ void MInstall::refresh()
     this->updatePartitionWidgets();
 
     //  system("umount -a 2>/dev/null");
-    QStringList drives = getCmdOuts("partition-info --exclude=boot --min-size=4000 -n drives");
+    QStringList drives = getCmdOuts("partition-info --exclude=boot --min-size=2000 -n drives");
     diskCombo->clear();
     grubBootCombo->clear();
     homeLabelEdit->setHidden(true);
@@ -2041,22 +2053,12 @@ void MInstall::buildServiceList()
 
     val = getCmdValue("dpkg -s acpi-support | grep '^Status'", "ok", " ", " ");
     if (val.compare("installed") == 0) {
-  	acpisupportItem = new QTreeWidgetItem(hardwareItem);
-  	acpisupportItem->setText(0, "acpi-support");
-  	acpisupportItem->setText(1, tr("acpi-support"));
-  	acpisupportItem->setCheckState(0, Qt::Checked);
+    	acpisupportItem = new QTreeWidgetItem(hardwareItem);
+    	acpisupportItem->setText(0, "acpi-support");
+    	acpisupportItem->setText(1, tr("Advanced Configuration and Power Interface"));
+    	acpisupportItem->setCheckState(0, Qt::Checked);
     } else {
     	acpisupportItem = NULL;
-    }
-
-    val = getCmdValue("dpkg -s gdomap | grep '^Status'", "ok", " ", " ");
-    if (val.compare("installed") == 0) {
-    	gdomapItem = new QTreeWidgetItem(hardwareItem);
-    	gdomapItem->setText(0, "gdomap");
-    	gdomapItem->setText(1, tr("Generates key events for ACPI scripts"));
-    	gdomapItem->setCheckState(0, Qt::Checked);
-    } else {
-    	gdomapItem = NULL;
     }
 
     val = getCmdValue("dpkg -s dbus | grep '^Status'", "ok", " ", " ");
@@ -2573,4 +2575,9 @@ void MInstall::copyTime()
     default:
         break;
     }
+}
+
+void MInstall::on_closeButton_clicked()
+{
+   ((MMain *)mmn)->closeClicked();
 }
