@@ -593,7 +593,7 @@ p, li { white-space: pre-wrap; }
              <bool>false</bool>
             </property>
             <property name="text">
-             <string notr="true">rootantiX-16</string>
+             <string notr="true">rootantiX</string>
             </property>
             <property name="maxLength">
              <number>16</number>

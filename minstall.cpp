@@ -1784,7 +1784,7 @@ void MInstall::pageDisplayed(int next)
         setCursor(QCursor(Qt::WaitCursor));
         tipsEdit->setText(tr("<p><b>Special Thanks</b><br/>Thanks to everyone who has chosen to support antiX Linux with their time, money, suggestions, work, praise, ideas, promotion, and/or encouragement.</p>"
                              "<p>Without you there would be no antiX Linux.</p>"
-                             "<p>anticapitalista, MX and antiX Communities</p>"));
+                             "<p>anticapitalista, antiX and MX Linux Communities</p>"));
         ((MMain *)mmn)->setHelpText(tr("<p><b>Installation in Progress</b><br/>"
                                        "antiX Linux is installing.  For a fresh install, this will probably take 3-20 minutes, depending on the speed of your system and the size of any partitions you are reformatting.</p>"
                                        "<p>If you click the Abort button, the installation will be stopped as soon as possible.</p>"));
@@ -2049,6 +2049,16 @@ void MInstall::buildServiceList()
         hddtempItem->setCheckState(0, Qt::Checked);
     } else {
         hddtempItem = NULL;
+    }
+
+    val = getCmdValue("dpkg -s acpi-support | grep '^Status'", "ok", " ", " ");
+    if (val.compare("installed") == 0) {
+  	acpisupportItem = new QTreeWidgetItem(hardwareItem);
+  	acpisupportItem->setText(0, "acpi-support");
+  	acpisupportItem->setText(1, tr("acpi-support"));
+  	acpisupportItem->setCheckState(0, Qt::Checked);
+    } else {
+    	acpisupportItem = NULL;
     }
 
     val = getCmdValue("dpkg -s acpi-support | grep '^Status'", "ok", " ", " ");
@@ -2540,8 +2550,8 @@ void MInstall::copyTime()
     switch (i) {
     case 1:
         tipsEdit->setText(tr("<p><b>Getting Help</b><br/>"
-                             "Basic information about antiX Linux is at http://antix.mepis.com and http://www.mepiscommunity.org/mx. "
-                             "There are volunteers to help you at the antiX Forum, http://antix.freeforums.org and the MEPIS Community Forum http://forum.mepiscommunity.org </p>"
+                             "Basic information about antiX Linux is at http://antix.mepis.com. "
+                             "There are volunteers to help you at the antiX Forum, http://antix.freeforums.org and the MX Linux Forum https://forum.mxlinux.org</p>"
                              "<p>If you ask for help, please remember to describe your problem and your computer "
                              "in some detail. Usually statements like 'it didn't work' are not helpful.</p>"));
         break;

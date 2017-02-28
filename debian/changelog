@@ -1,3 +1,11 @@
+antix-installer (0.8.1) unstable; urgency=medium
+
+  * Labelled default partition name to rootantix so xfs file system will work
+  * Correcte MX Linux address
+  * Updated translations
+
+ -- anticapitalista <antix@operamail.com>  Mon, 27 Feb 2017 18:21:44 +0200
+
 antix-installer (0.8.0) unstable; urgency=medium
 
   * Bumped version for stretch release
