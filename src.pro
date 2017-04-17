@@ -11,6 +11,7 @@ TRANSLATIONS += translations/minstall_ca.ts \
                 translations/minstall_hu.ts \
                 translations/minstall_it.ts \
                 translations/minstall_ja.ts \
+		translations/minstall_lt.ts \
                 translations/minstall_nl.ts \
                 translations/minstall_pl.ts \
                 translations/minstall_pt_BR.ts \

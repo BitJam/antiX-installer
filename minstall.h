@@ -96,7 +96,10 @@ public:
     static int getPartitionNumber();
     static int command(const QString &string);
     bool is32bit();
+    bool is64bit();
     bool isInsideVB();
+    bool isGpt(QString drv);
+    bool isUefi();
     int runCmd(QString cmd);
 
     void buildServiceList();
@@ -115,12 +118,13 @@ public:
     bool makeGrub(int rootdev, QString rootpart, const char *rootmnt, bool initrd);
     bool makeLinuxPartition(QString dev, const char *type, bool bad, QString label);
     bool makeSwapPartition(QString dev);
+    bool makeEsp(QString drv, int size);
     bool mountPartition(QString dev, const char *point);
     bool removeKernel();
     bool setComputerName();
     bool setPasswords();
     bool setUserInfo();
-    bool setUserName();                
+    bool setUserName();
 
     void gotoPage(int next);
     void pageDisplayed(int next);

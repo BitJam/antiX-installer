@@ -11,6 +11,6 @@ Homepage: http://antix.mepis.org
 
 Package: antix-installer
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, os-prober, gdisk, partition-info, antix-libs, grub-efi-amd64-bin [amd64], grub-efi-ia32-bin [i386] 
+Depends: os-prober, gdisk, partition-info, antix-libs, grub-efi-amd64-bin [amd64], grub-efi-ia32-bin [i386] 
 Recommends: gparted, partitionmanager
 Description: GUI installer for antiX.

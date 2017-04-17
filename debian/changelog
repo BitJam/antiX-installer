@@ -1,3 +1,41 @@
+antix-installer (0.8.7) unstable; urgency=medium
+
+  * various bugfixes
+  * remove installer icon when using spacefm
+  * if save desktop defults is set, still run live-to-installed
+
+ -- anticapitalista <antix@operamail.com>  Sat, 15 Apr 2017 15:23:20 +0300
+
+antix-installer (0.8.6) unstable; urgency=medium
+
+  * Remove virtualbox-guest depends
+
+ -- anticapitalista <antix@operamail.com>  Mon, 10 Apr 2017 20:47:37 +0300
+
+antix-installer (0.8.5) unstable; urgency=medium
+
+  * Improved translations
+
+ -- anticapitalista <antix@operamail.com>  Sun, 02 Apr 2017 19:02:28 +0300
+
+antix-installer (0.8.4) unstable; urgency=medium
+
+  * Detect and warn user if using 32 bit iso booting UEFI
+
+ -- anticapitalista <antix@operamail.com>  Fri, 24 Mar 2017 18:27:59 +0200
+
+antix-installer (0.8.3) unstable; urgency=medium
+
+  * 32 bit to default not to install grub in gpt
+
+ -- anticapitalista <antix@operamail.com>  Thu, 09 Mar 2017 10:57:35 +0200
+
+antix-installer (0.8.2) unstable; urgency=medium
+
+  * Auto-install allows for eufi booting - 64 bit only - Adrian
+
+ -- anticapitalista <antix@operamail.com>  Mon, 06 Mar 2017 19:54:59 +0200
+
 antix-installer (0.8.1) unstable; urgency=medium
 
   * Labelled default partition name to rootantix so xfs file system will work
